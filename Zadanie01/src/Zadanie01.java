@@ -1,0 +1,51 @@
+public class Zadanie01 {
+
+    public static void main(String[] args) {
+        DecoderInterface test = new Decode();
+        test.input(1);
+        test.input(1);
+        test.input(0);
+        test.input(1);
+        test.input(1);
+        test.input(1);
+        test.input(1);
+        test.input(0);
+        test.input(1);
+        test.input(1);
+        test.input(1);
+        test.input(1);
+        test.input(1);
+        test.input(1);
+        test.input(1);
+        test.input(1);
+        test.input(0);
+        test.input(1);
+        test.input(1);
+        test.input(1);
+        test.input(1);
+        test.input(0);
+        test.input(1);
+        test.input(1);
+        test.input(0);
+        test.input(1);
+        test.input(1);
+        test.input(1);
+        test.input(1);
+        test.input(1);
+        test.input(1);
+        test.input(0);
+        test.input(1);
+        test.input(1);
+        test.input(0);
+        test.input(1);
+        test.input(1);
+        test.input(0);
+        test.input(1);
+        test.input(1);
+        test.input(1);
+        test.input(0);
+        test.input(1);
+        System.out.println(test.output());
+        test.reset();
+    }
+}
