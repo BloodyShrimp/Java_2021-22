@@ -1,5 +1,6 @@
 import java.util.*;
 
+//final version final
 public class Decrypter implements DecrypterInterface {
     public List<String> words;
     public List<Integer> lengths;
@@ -16,7 +17,7 @@ public class Decrypter implements DecrypterInterface {
     }
 
     public void setInputText(String encryptedDocument) {
-        if(encryptedDocument == null) {
+        if (encryptedDocument == null) {
             Code.clear();
             Decode.clear();
             return;
@@ -67,35 +68,34 @@ public class Decrypter implements DecrypterInterface {
             }
             for (int i = 0; i < 6; i++) {
                 int j = 0;
-                // System.err.println(i + indeks_wydzial);
-                // System.err.println(i);
                 for (Character temp : words.get(i + indeks_wydzial).toCharArray()) {
-                    // System.out.println(temp);
                     if (findIndexesOfChar(temp, words.get(i + indeks_wydzial))
                             .equals(findIndexesOfChar(wzor.get(i).charAt(j), wzor.get(i)))) {
-                        Code.put(wzor.get(i).charAt(j), temp);
-                        Decode.put(temp, wzor.get(i).charAt(j));
+                        if ((temp == ',' && wzor.get(i).charAt(j) != ',')
+                                || (temp != ',' && wzor.get(i).charAt(j) == ',')) {
+                            isWordOK = false;
+                            break;
+                        } else {
+                            Code.put((Character) wzor.get(i).charAt(j), temp);
+                            Decode.put(temp, (Character) wzor.get(i).charAt(j));
+                        }
                     } else {
                         isWordOK = false;
                         break;
                     }
-                    // System.out.println(isWordOK);
                     j++;
                 }
-                if(!isWordOK) {
+                if (!isWordOK) {
                     break;
                 }
             }
-            if(isWordOK) {
+            if (isWordOK) {
                 isFinished = false;
-            }
-            else {
+            } else {
                 Code.clear();
                 Decode.clear();
                 indeks_wydzial = findIndexOfWFAIS(indeks_wydzial + 1);
             }
         }
-        Code.remove(',');
-        Decode.remove(',');
     }
 }
