@@ -1,20 +1,26 @@
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Collections;
 
 public class BusLine implements BusLineInterface {
     private Map<String, List<Position>> StartFinishMap;
     private Map<String, List<LineSegment>> SegmentsMap;
-    public Map<String, List<Position>> PointsMap;
+    private Map<String, List<Position>> PointsMap;
+    private Map<String, List<Position>> getLinesMap;
+    private Map<String, List<Position>> getIntersectionPositionsMap;
+    private Map<String, List<String>> getIntersectionsWithLinesMap;
+    private Map<BusLineInterface.LinesPair, Set<Position>> getIntersectionOfLinesPairMap;
 
-    public class MyLinesPair implements LinesPair {
+    static class LinesPair implements BusLineInterface.LinesPair {
         private String FirstLine;
         private String SecondLine;
 
-        public MyLinesPair(String FirstLine, String SecondLine) {
+        public LinesPair(String FirstLine, String SecondLine) {
             this.FirstLine = FirstLine;
             this.SecondLine = SecondLine;
         }
@@ -26,12 +32,38 @@ public class BusLine implements BusLineInterface {
         public String getSecondLineName() {
             return SecondLine;
         }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(FirstLine, SecondLine);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            LinesPair other = (LinesPair) obj;
+            return FirstLine.equals(other.FirstLine) && SecondLine.equals(other.SecondLine);
+        }
+
+        @Override
+        public String toString() {
+            return "LinesPair [FirstLine=" + FirstLine + ", SecondLine=" + SecondLine + "]";
+        }
     }
 
     public BusLine() {
-        StartFinishMap = new HashMap<String, List<Position>>();
-        SegmentsMap = new HashMap<String, List<LineSegment>>();
-        PointsMap = new HashMap<String, List<Position>>();
+        StartFinishMap = new HashMap<>();
+        SegmentsMap = new HashMap<>();
+        PointsMap = new HashMap<>();
+        getLinesMap = new HashMap<>();
+        getIntersectionPositionsMap = new HashMap<>();
+        getIntersectionsWithLinesMap = new HashMap<>();
+        getIntersectionOfLinesPairMap = new HashMap<>();
     }
 
     public void addBusLine(String busLineName, Position firstPoint, Position lastPoint) {
@@ -43,6 +75,12 @@ public class BusLine implements BusLineInterface {
         SegmentsMap.put(busLineName, tempSegment);
         List<Position> tempPoints = new ArrayList<Position>();
         PointsMap.put(busLineName, tempPoints);
+        List<Position> tempLines = new ArrayList<>();
+        getLinesMap.put(busLineName, tempLines);
+        List<Position> tempIntersectionPositions = new ArrayList<>();
+        getIntersectionPositionsMap.put(busLineName, tempIntersectionPositions);
+        List<String> temIntersectionsWithLines = new ArrayList<>();
+        getIntersectionsWithLinesMap.put(busLineName, temIntersectionsWithLines);
     }
 
     public void addLineSegment(String busLineName, LineSegment lineSegment) {
@@ -50,7 +88,43 @@ public class BusLine implements BusLineInterface {
     }
 
     public void findIntersections() {
+        createListOfPoints();
+        for (var entry : StartFinishMap.entrySet()) {
+            var firstLineName = entry.getKey();
+            for (var otherEntry : StartFinishMap.entrySet()) {
+                var secondLineName = otherEntry.getKey();
+                Set<Position> tempSet = new HashSet<>();
+                LinesPair tempPair = new LinesPair(firstLineName, secondLineName);
+                getIntersectionOfLinesPairMap.put(tempPair, tempSet);
+            }
+        }
+        for (var entry : PointsMap.entrySet()) {
+            var currentList = entry.getValue();
+            var currentLine = entry.getKey();
+            for (var firstLinePoint : currentList) {
+                for (var otherEntry : PointsMap.entrySet()) {
+                    var otherLine = otherEntry.getKey();
+                    if (checkForIntersection(currentLine, otherLine, firstLinePoint)) {
+                        // System.out.println(currentLine + " " + otherLine + " " + firstLinePoint);
+                        getIntersectionPositionsMap.get(currentLine).add(firstLinePoint);
+                        // if (!getIntersectionsWithLinesMap.get(currentLine).contains(otherLine)) {
+                        getIntersectionsWithLinesMap.get(currentLine).add(otherLine);
+                        // }
+                        getIntersectionOfLinesPairMap.get(new LinesPair(currentLine, otherLine)).add(firstLinePoint);
 
+                    }
+                }
+            }
+        }
+
+        for (var entry : StartFinishMap.entrySet()) {
+            var keys = entry.getKey();
+            if(getIntersectionPositionsMap.get(keys).isEmpty()) {
+                PointsMap.remove(keys);
+                getIntersectionPositionsMap.remove(keys);
+                getIntersectionsWithLinesMap.remove(keys);
+            }
+        }
     }
 
     public void sortSegments() {
@@ -143,19 +217,79 @@ public class BusLine implements BusLineInterface {
         }
     }
 
-    public Map<String, List<Position>> getLines() {
+    // 1 - horizontal 2 - vertical 3 - falling slope 4 - rising slope 5 - cross 6 -
+    // angled cross
+    public boolean checkForIntersection(String firstLine, String secondLine, Position point) {
+        var firstPoint = PointsMap.get(firstLine).indexOf(point);
+        var secondPoint = PointsMap.get(secondLine).indexOf(point);
+        if (firstLine.equals(secondLine)) {
+            secondPoint = PointsMap.get(secondLine).lastIndexOf(point);
+        }
+        int firstLineOrientation = checkLineOrientation(firstLine, firstPoint);
+        int secondLineOrientation = checkLineOrientation(secondLine, secondPoint);
 
+        if ((firstLineOrientation == 1 && secondLineOrientation == 2)
+                || (firstLineOrientation == 2 && secondLineOrientation == 1)) {
+            return true;
+        } else if ((firstLineOrientation == 3 && secondLineOrientation == 4)
+                || (firstLineOrientation == 4 && secondLineOrientation == 3)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // 1 - horizontal 2 - vertical 3 - falling slope 4 - rising slope 5 - cross 6 -
+    // angled cross
+    public int checkLineOrientation(String line, int index) {
+        var linePoints = PointsMap.get(line);
+        var PointIndex = index;
+        if ((PointIndex <= 0) || PointIndex >= linePoints.size() - 1) {
+            return -1;
+        }
+        var point = linePoints.get(PointIndex);
+        var LPoint = new Position2D(point.getCol() - 1, point.getRow());
+        var RPoint = new Position2D(point.getCol() + 1, point.getRow());
+        var UPoint = new Position2D(point.getCol(), point.getRow() - 1);
+        var DPoint = new Position2D(point.getCol(), point.getRow() + 1);
+        var LUPoint = new Position2D(point.getCol() - 1, point.getRow() - 1);
+        var LDPoint = new Position2D(point.getCol() - 1, point.getRow() + 1);
+        var RUPoint = new Position2D(point.getCol() + 1, point.getRow() - 1);
+        var RDPoint = new Position2D(point.getCol() + 1, point.getRow() + 1);
+        int orientation = 0;
+
+        if ((linePoints.get(PointIndex - 1).equals(LPoint) && linePoints.get(PointIndex + 1).equals(RPoint))
+                || (linePoints.get(PointIndex - 1).equals(RPoint) && linePoints.get(PointIndex + 1).equals(LPoint))) {
+            orientation = 1;
+        } else if ((linePoints.get(PointIndex - 1).equals(DPoint) && linePoints.get(PointIndex + 1).equals(UPoint))
+                || (linePoints.get(PointIndex - 1).equals(UPoint) && linePoints.get(PointIndex + 1).equals(DPoint))) {
+            orientation = 2;
+        } else if (((linePoints.get(PointIndex - 1).equals(LUPoint) && linePoints.get(PointIndex + 1).equals(RDPoint))
+                || (linePoints.get(PointIndex - 1).equals(RDPoint)
+                        && linePoints.get(PointIndex + 1).equals(LUPoint)))) {
+            orientation = 3;
+        } else if (((linePoints.get(PointIndex - 1).equals(RUPoint) && linePoints.get(PointIndex + 1).equals(LDPoint))
+                || (linePoints.get(PointIndex - 1).equals(LDPoint)
+                        && linePoints.get(PointIndex + 1).equals(RUPoint)))) {
+            orientation = 4;
+        }
+
+        return orientation;
+    }
+
+    public Map<String, List<Position>> getLines() {
+        return PointsMap;
     }
 
     public Map<String, List<Position>> getIntersectionPositions() {
-
+        return getIntersectionPositionsMap;
     }
 
     public Map<String, List<String>> getIntersectionsWithLines() {
-
+        return getIntersectionsWithLinesMap;
     }
 
-    public Map<LinesPair, Set<Position>> getIntersectionOfLinesPair() {
-
+    public Map<BusLineInterface.LinesPair, Set<Position>> getIntersectionOfLinesPair() {
+        return getIntersectionOfLinesPairMap;
     }
 }
