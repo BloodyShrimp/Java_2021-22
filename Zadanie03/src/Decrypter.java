@@ -76,8 +76,10 @@ public class Decrypter implements DecrypterInterface {
                             isWordOK = false;
                             break;
                         } else {
-                            Code.put((Character) wzor.get(i).charAt(j), temp);
-                            Decode.put(temp, (Character) wzor.get(i).charAt(j));
+                            if (!Decode.containsKey(temp)) {
+                                Code.put((Character) wzor.get(i).charAt(j), temp);
+                                Decode.put(temp, (Character) wzor.get(i).charAt(j));
+                            }
                         }
                     } else {
                         isWordOK = false;
@@ -89,6 +91,9 @@ public class Decrypter implements DecrypterInterface {
                     break;
                 }
             }
+            if (Code.size() != Decode.size()) {
+                isWordOK = false;
+            }
             if (isWordOK) {
                 isFinished = false;
             } else {
@@ -97,5 +102,7 @@ public class Decrypter implements DecrypterInterface {
                 indeks_wydzial = findIndexOfWFAIS(indeks_wydzial + 1);
             }
         }
+        Code.remove(',');
+        Decode.remove(',');
     }
 }
