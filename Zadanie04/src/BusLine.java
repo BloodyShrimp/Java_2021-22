@@ -1,11 +1,4 @@
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 
 public class BusLine implements BusLineInterface {
     private Map<String, List<Position>> StartFinishMap;
@@ -105,11 +98,8 @@ public class BusLine implements BusLineInterface {
                 for (var otherEntry : PointsMap.entrySet()) {
                     var otherLine = otherEntry.getKey();
                     if (checkForIntersection(currentLine, otherLine, firstLinePoint)) {
-                        // System.out.println(currentLine + " " + otherLine + " " + firstLinePoint);
                         getIntersectionPositionsMap.get(currentLine).add(firstLinePoint);
-                        // if (!getIntersectionsWithLinesMap.get(currentLine).contains(otherLine)) {
                         getIntersectionsWithLinesMap.get(currentLine).add(otherLine);
-                        // }
                         getIntersectionOfLinesPairMap.get(new LinesPair(currentLine, otherLine)).add(firstLinePoint);
 
                     }
@@ -137,13 +127,16 @@ public class BusLine implements BusLineInterface {
             for (int i = 0; i < list.size(); i++) {
                 if (list.get(i).getFirstPosition().equals(beg))
                     Collections.swap(list, i, 0);
+            }
+            
+            for (int i = 0; i < list.size(); i++) {
                 if (list.get(i).getLastPosition().equals(end))
                     Collections.swap(list, i, list.size() - 1);
             }
 
             for (int i = 0; i < list.size() - 1; i++) {
                 if (list.get(i).getLastPosition().equals(list.get(i + 1).getFirstPosition())) {
-                    break;
+                    ;
                 } else {
                     for (int j = i + 2; j < list.size(); j++) {
                         if (list.get(i).getLastPosition().equals(list.get(j).getFirstPosition())) {
@@ -217,8 +210,7 @@ public class BusLine implements BusLineInterface {
         }
     }
 
-    // 1 - horizontal 2 - vertical 3 - falling slope 4 - rising slope 5 - cross 6 -
-    // angled cross
+    // 1 - horizontal 2 - vertical 3 - falling slope 4 - rising slope
     public boolean checkForIntersection(String firstLine, String secondLine, Position point) {
         var firstPoint = PointsMap.get(firstLine).indexOf(point);
         var secondPoint = PointsMap.get(secondLine).indexOf(point);
@@ -239,8 +231,7 @@ public class BusLine implements BusLineInterface {
         }
     }
 
-    // 1 - horizontal 2 - vertical 3 - falling slope 4 - rising slope 5 - cross 6 -
-    // angled cross
+    // 1 - horizontal 2 - vertical 3 - falling slope 4 - rising slope
     public int checkLineOrientation(String line, int index) {
         var linePoints = PointsMap.get(line);
         var PointIndex = index;
