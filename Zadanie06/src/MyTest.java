@@ -1,0 +1,43 @@
+public class MyTest {
+    public static void main(String[] args) {
+        Compression kompresja = new Compression();
+        kompresja.addWord("101");
+        kompresja.addWord("110");
+        kompresja.addWord("111");
+        kompresja.addWord("111");
+        kompresja.addWord("111");
+        kompresja.addWord("110");
+        kompresja.addWord("111");
+        kompresja.addWord("111");
+        kompresja.addWord("110");
+        kompresja.addWord("111");
+        kompresja.addWord("111");
+        kompresja.addWord("110");
+        kompresja.addWord("101");
+        kompresja.addWord("110");
+        kompresja.addWord("101");
+        kompresja.addWord("111");
+        kompresja.addWord("111");
+        kompresja.addWord("111");
+        kompresja.compress();
+        System.out.println(kompresja.getHeader());
+        System.out.println(kompresja.getWord());
+        System.out.println(kompresja.getWord());
+        System.out.println(kompresja.getWord());
+        System.out.println(kompresja.getWord());
+        System.out.println(kompresja.getWord());
+        System.out.println(kompresja.getWord());
+        System.out.println(kompresja.getWord());
+        System.out.println(kompresja.getWord());
+        System.out.println(kompresja.getWord());
+        System.out.println(kompresja.getWord());
+        System.out.println(kompresja.getWord());
+        System.out.println(kompresja.getWord());
+        System.out.println(kompresja.getWord());
+        System.out.println(kompresja.getWord());
+        System.out.println(kompresja.getWord());
+        System.out.println(kompresja.getWord());
+        System.out.println(kompresja.getWord());
+        System.out.println(kompresja.getWord());
+    }
+}
