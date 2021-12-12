@@ -37,7 +37,9 @@ class stolen implements CompressionInterface {
         int optJ = 0; // optymalna ilosc kodowanych slow
 
         // posortuj mape liczby slow
-        Map<String, Integer> liczbaSlowMalejaco = liczbaSlow.entrySet().stream().sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).collect(toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
+        Map<String, Integer> liczbaSlowMalejaco = liczbaSlow.entrySet().stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
 
         int optymalny = dlugoscWejscia;
         int skompresowany;
